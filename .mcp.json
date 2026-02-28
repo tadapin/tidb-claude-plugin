@@ -1,11 +1,10 @@
 {
   "mcpServers": {
     "TiDB": {
-      "command": "uvx",
+      "command": "bash",
       "args": [
-        "--from",
-        "pytidb[mcp]",
-        "tidb-mcp-server"
+        "-c",
+        "set -a && [ -f .env ] && source .env; exec uvx --from 'pytidb[mcp]' tidb-mcp-server"
       ]
     }
   }
