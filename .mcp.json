@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "TiDB": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "pytidb[mcp]",
+        "tidb-mcp-server"
+      ]
+    }
+  }
+}
