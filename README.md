@@ -27,6 +27,18 @@ TiDB Cloud plugin for Claude Code. Provides all TiDB Cloud skills and MCP server
 
 ## Installation
 
+### Via Marketplace (recommended)
+
+```bash
+# Add the marketplace
+/plugin marketplace add tadapin/tidb-claude-plugin
+
+# Install the plugin (via /plugin UI or CLI)
+/plugin install tidb-ai-dev@tidb-plugins
+```
+
+### Manual
+
 ```bash
 git clone https://github.com/tadapin/tidb-claude-plugin.git
 claude --plugin-dir /path/to/tidb-claude-plugin
