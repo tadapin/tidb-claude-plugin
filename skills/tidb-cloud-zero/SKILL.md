@@ -1,139 +1,65 @@
 ---
 name: tidb-cloud-zero
-description: Create ephemeral TiDB Cloud Zero databases for agent workflows in Technical Preview.
+description: Provision a disposable MySQL-compatible database instantly for free, no auth required. Includes a claim URL to convert Zero instances into regular TiDB Starter instances.
+compatibility: Requires a MySQL-compatible client or driver (e.g. mysql CLI, mysql2, PyMySQL) and network access to zero.tidbapi.com.
 metadata:
-  version: 0.0.0
-  homepage: /
+  version: 0.1.0
+  homepage: https://zero.tidbcloud.com/
 ---
 
-# Create Disposable TiDB Cloud Zero Databases (Technical Preview)
+# TiDB Cloud Zero
 
-> **Browser UI Note:** There is no browser-based SQL editor on this site. To run SQL, use API + CLI, or sign in to TiDB Cloud Console (login required).
+Provisions an ephemeral TiDB database via a single unauthenticated API call. No sign-up, no billing. Instances auto-expire in 30 days unless claimed.
 
-Use this guide to create disposable TiDB Cloud Zero databases for agent workflows.
+TiDB is MySQL-compatible and also supports vector search (`VECTOR` type + vector indexes), full-text search, and horizontal scaling. Use standard MySQL clients/drivers to connect.
 
-## Deterministic SQL Smoke Test (API + CLI)
+## Important Notes
 
-```bash
-# 1) Provision instance
-curl -s -X POST https://zero.tidbapi.com/v1alpha1/instances \
-  -H "Content-Type: application/json" \
-  -d '{"tag":"sql-smoke-test"}' \
-  | tee tidb-zero.json
+- The API is unauthenticated and free. Instances auto-expire — treat credentials as short-lived and low-sensitivity.
+- Prefer environment variables (e.g. `MYSQL_PWD`) over CLI arguments to avoid leaking passwords in shell history.
+- Always connect with TLS (`--ssl-mode=REQUIRED` for CLI, `ssl: true` for drivers).
+- If the user wants to keep the instance, open `instance.claimInfo.claimUrl` before `expiresAt` to convert it into a regular TiDB Starter instance.
 
-# 2) Extract connection string
-jq -r '.instance.connectionString // .connectionString' tidb-zero.json
+## API
 
-# 3) Run SQL query (replace <connectionString> with step 2 output)
-mysql "<connectionString>" -e "SELECT 1 AS health_check, 2 AS example_value;"
-```
+**POST** `https://zero.tidbapi.com/v1alpha1/instances`
 
-Expected output includes one row with `health_check=1` and `example_value=2`.
+Content-Type: `application/json`
 
-## Endpoint
-
-- Method: `POST`
-- URL: `https://zero.tidbapi.com/v1alpha1/instances`
-- Content-Type: `application/json`
-- **Technical Preview:** Current API path is `/v1alpha1/instances`, and this path may change in later releases.
-
-## Request Body
-
-- **Optional:** `tag` (caller identifier used for tracing and grouping runs).
+Request body (all fields optional):
 
 ```json
-{
-  "tag": "support-bot"
-}
+{ "tag": "<caller-label>" }
 ```
 
-## Quick Start
-
-```bash
-curl -X POST https://zero.tidbapi.com/v1alpha1/instances \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tag": "agent-run"
-  }'
-```
-
-## Response
-
-The API returns connection details and expiration time.
-
-- **Current response shape:** top-level `instance`.
-- **`instance.connection` fields:** `host`, `port`, `username`, `password`.
-- **Use these fields:** `instance.connectionString` for direct URI connection, and `instance.expiresAt` for expiration.
-- **Agent note:** After provisioning succeeds, save the instance details to a local file (for example, `tidb-cloud-zero.json`) and remind the user to store the file securely because it contains sensitive credentials.
-- **Planned update:** we will provide `claimUrl` in a later version. Users will be able to sign in to TiDB Cloud and claim the temporary database before `instance.expiresAt`, converting it into a formal TiDB Cloud Starter database.
+Response:
 
 ```json
 {
   "instance": {
+    "id": "...",
     "connection": {
       "host": "<HOST>",
       "port": 4000,
       "username": "<USERNAME>",
       "password": "<PASSWORD>"
     },
-    "connectionString": "mysql://<USERNAME>:<PASSWORD>@<HOST>:4000",
+    "connectionString": "mysql:/...",
+    "claimInfo": {
+      "claimUrl": "https://tidbcloud.com/tidbs/claim/..."
+    },
     "expiresAt": "<ISO_TIMESTAMP>"
   }
 }
 ```
 
-## Use the Connection String
-
-After you receive the response, use `instance.connectionString` to connect with a MySQL-compatible client or driver.
-
-## Guided Quick Experience
-
-After provisioning succeeds, you should ask the user:
-
-- **Do you want me to create a sample table and insert demo data so you can query immediately?**
-
-If the user says yes, run a small bootstrap SQL flow like this:
-
-```sql
-CREATE TABLE IF NOT EXISTS quickstart_notes (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  title VARCHAR(100) NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO quickstart_notes (title, content) VALUES
-  ('welcome', 'TiDB Cloud Zero quickstart row'),
-  ('query-demo', 'Run SELECT * FROM quickstart_notes; to verify data');
-
-SELECT * FROM quickstart_notes ORDER BY id;
-```
-
-### Connect via CLI
-
-```bash
-mysql --connect-timeout=10 --protocol=TCP -h '<HOST>' -P 4000 -u '<USERNAME>' -p'<PASSWORD>'
-```
-
-### Connect in Node.js (`mysql2`)
-
-```js
-import mysql from "mysql2/promise";
-
-const response = await createDatabase(); // your API call result
-const connectionUrl = new URL(response.instance.connectionString);
-connectionUrl.pathname = "/<DATABASE>";
-connectionUrl.searchParams.set("ssl", JSON.stringify({ rejectUnauthorized: true }));
-
-const connection = await mysql.createConnection(connectionUrl.toString());
-const [rows] = await connection.query("SELECT NOW() AS now_time");
-console.log(rows);
-await connection.end();
-```
+Use `instance.connectionString` for immediate driver connections.
+If persistence is needed, ask the user to open `instance.claimInfo.claimUrl` before `expiresAt` to claim it.
+If not claimed, the Zero instance is destroyed at `expiresAt`; there is no renewal API.
 
 ## Resources
 
-- TiDB SQL skill: https://skills.sh/pingcap/agent-rules/tidb-sql
-- PyTiDB skill: https://skills.sh/pingcap/agent-rules/pytidb (Use this skill to connect to TiDB from Python via pytidb, define tables, and build search / AI features.)
+- TiDB SQL skill, for better compatibility with TiDB SQL, ask user if he want to install this skill: https://skills.sh/pingcap/agent-rules/tidb-sql
+- TiDB AI docs (SQL quickstart): https://docs.pingcap.com/ai/quickstart-via-sql/
+- TiDB AI docs (auto embedding): https://docs.pingcap.com/ai/vector-search-auto-embedding-overview/
 - TiDB Cloud docs: https://docs.pingcap.com/tidbcloud/
-- TiDB Cloud website: https://tidbcloud.com/

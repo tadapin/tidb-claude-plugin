@@ -4,16 +4,21 @@ TiDB Cloud plugin for Claude Code. Provides all TiDB Cloud skills and MCP server
 
 ## Features
 
-### Skills (6)
+### Skills (11)
 
 | Skill | Description |
 |-------|-------------|
-| **tidbx** | TiDB Cloud (TiDB X) cluster provisioning and lifecycle management |
+| **tidbx** | TiDB Cloud Serverless cluster provisioning and lifecycle management |
 | **tidb-sql** | TiDB SQL authoring with MySQL compatibility guidance |
 | **pytidb** | Python SDK for TiDB — CRUD, vector/full-text/hybrid search, embeddings |
 | **tidbx-serverless-driver** | Serverless HTTP driver for edge runtimes |
 | **tidbx-kysely** | Kysely query builder integration (TCP + serverless) |
-| **tidb-cloud-zero** | Create ephemeral TiDB Cloud Zero databases for agent workflows (Technical Preview) |
+| **tidb-cloud-zero** | Disposable MySQL-compatible database, no auth required |
+| **mysql** | MySQL usage guardrails — prepared statements, transactions, performance |
+| **tidbx-javascript-mysql2** | Node.js mysql2 driver for TiDB — connection, TLS, pooling |
+| **tidbx-javascript-mysqljs** | Node.js mysqljs driver for TiDB — callback patterns, parameterized queries |
+| **tidbx-nextjs** | Next.js App Router with TiDB — Route Handlers, Edge/Node runtime |
+| **tidbx-prisma** | Prisma ORM setup for TiDB — schema, migrations, CRUD, raw SQL |
 
 ### MCP Server
 
@@ -54,6 +59,10 @@ Once installed, the skills activate automatically based on context:
 - Create a disposable database → `tidb-cloud-zero` skill activates
 - Use serverless driver → `tidbx-serverless-driver` skill activates
 - Use Kysely with TiDB → `tidbx-kysely` skill activates
+- Build Next.js app with TiDB → `tidbx-nextjs` skill activates
+- Use Prisma with TiDB → `tidbx-prisma` skill activates
+- Use mysql2/mysqljs driver → `tidbx-javascript-mysql2` / `tidbx-javascript-mysqljs` skill activates
+- Write raw MySQL queries → `mysql` skill activates
 
 The TiDB MCP server provides direct database access tools within Claude Code.
 
