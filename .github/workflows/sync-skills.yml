@@ -1,0 +1,31 @@
+name: Sync skills from upstream
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # Daily at 09:00 UTC (18:00 JST)
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run sync script
+        run: bash scripts/sync-skills.sh
+
+      - name: Create PR if skills changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: sync skills from upstream"
+          title: "chore: sync skills from upstream"
+          body: |
+            Automated daily sync from:
+            - [pingcap/agent-rules](https://github.com/pingcap/agent-rules)
+            - [zero.tidbcloud.com/SKILL.md](https://zero.tidbcloud.com/SKILL.md)
+          branch: auto/sync-skills
+          delete-branch: true
