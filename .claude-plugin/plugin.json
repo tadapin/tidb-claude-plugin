@@ -1,11 +1,18 @@
 {
   "name": "tidb-ai-dev",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TiDB Cloud skills and MCP integration for Claude Code. Provides TiDB SQL, PyTiDB, TiDB X provisioning, serverless driver, and Kysely skills along with TiDB MCP server.",
   "author": {
     "name": "Bohnen"
   },
   "repository": "https://github.com/tadapin/tidb-claude-plugin",
   "license": "Apache-2.0",
-  "keywords": ["tidb", "tidb-cloud", "database", "serverless", "vector-search", "mcp"]
+  "keywords": [
+    "tidb",
+    "tidb-cloud",
+    "database",
+    "serverless",
+    "vector-search",
+    "mcp"
+  ]
 }

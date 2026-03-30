@@ -18,6 +18,20 @@ jobs:
       - name: Run sync script
         run: bash scripts/sync-skills.sh
 
+      - name: Bump patch version if skills changed
+        run: |
+          if [ -n "$(git status --porcelain skills/)" ]; then
+            cd .claude-plugin
+            current=$(jq -r .version plugin.json)
+            IFS='.' read -r major minor patch <<< "$current"
+            new_version="$major.$minor.$((patch + 1))"
+            jq --arg v "$new_version" '.version = $v' plugin.json > tmp.json && mv tmp.json plugin.json
+            jq --arg v "$new_version" '.metadata.version = $v | .plugins[0].version = $v' marketplace.json > tmp.json && mv tmp.json marketplace.json
+            echo "Bumped version: $current -> $new_version"
+          else
+            echo "No skill changes detected, skipping version bump"
+          fi
+
       - name: Create PR if skills changed
         uses: peter-evans/create-pull-request@v8
         with:
