@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "TiDB Cloud plugins for Claude Code",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "plugins": [
     {
@@ -15,7 +15,7 @@
         "repo": "tadapin/tidb-claude-plugin"
       },
       "description": "TiDB Cloud skills and MCP integration for Claude Code. Provides TiDB SQL, PyTiDB, TiDB X provisioning, serverless driver, Kysely skills, environment management, and TiDB MCP server.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": {
         "name": "Bohnen"
       },
