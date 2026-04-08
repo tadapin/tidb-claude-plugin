@@ -55,12 +55,14 @@ This is a sub-module of `tidb-query-tuning`, not an independent skill entry poin
 ## Non-Plan Cases
 
 - `PointGet` or `BatchPointGet` as bottleneck usually means the plan is already optimal; suspect TiKV hotspot or storage-side latency.
+- Exception: for non-clustered primary-key tables, `PointGet`/`BatchPointGet` can show double-read behavior (`num_rpc:2`). If workload is dominated by primary-key point lookups, consider clustered primary key table design to reduce RPCs.
 - Small `IndexRangeScan`/`TableRangeScan` (for example ~100 rows) but long latency usually points to TiKV-side issues, not plan shape.
 - Small-row `Hash`/`Agg`/`Sort` (for example ~1000 rows) but long latency is usually not a query plan problem.
 - If plan is already optimal and bottleneck is execution-layer scheduling/compute, consider increasing execution engine concurrency.
 
 ## Useful References
 
+- `cases/use-clustered-primary-key-for-pointget.md` - Use clustered primary key to reduce `PointGet`/`BatchPointGet` RPC count for primary-key point lookup workloads.
 - `cases/use-covering-index-to-avoid-double-scan.md` - Use covering indexes to reduce index lookup double-read cost.
 - `cases/use-tiflash-to-speed-up-large-scan.md` - Use TiFlash for large scan and analytical workloads.
 - `cases/use-tiflash-mpp-for-large-join.md` - Use TiFlash or MPP for large joins when index-based join optimization is not feasible.
